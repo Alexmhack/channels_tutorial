@@ -337,8 +337,7 @@ it is passed onto *AuthMiddlewareStack*.
 
 AuthMiddlewareStack provides the connection with a reference to the currently 
 authenticated user just like the django's AuthenticationMiddleware does with the 
-request object through which we can use the request variables such as ```request.user
-```.
+request object through which we can use the request variables such as ```request.user```.
 
 AuthMiddlewareStack hands over the connection to the URLRouter which simply routes the
 HTTP path to a particular consumer based on the provided url patterns just like django
