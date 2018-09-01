@@ -126,3 +126,73 @@ Now let's check
 
 Enter in anything and press enter or just hit the button and you will be taken to the
 new url *127.0.0.1/chat/<input-entered>*. 
+
+# Integrating channels library
+In the section we are going to integrate our simple non-functional django app with channels
+library and make our chat rooms functional
+
+We will be creating routes for channels just like we create urls in urlconf for our django 
+project, routes work in the same way, it tells the channels what to run when an HTTP request
+is received by channels server.
+
+Create a new file for routing inside mysite folder where our settings.py file lies
+
+**mysite/routing.py**
+```
+from channels.routing import ProtocolTypeRouter
+
+application = ProtocolTypeRouter({
+	# (http->django views is added by default)
+})
+```
+**[SOURCE](https://channels.readthedocs.io/en/latest/tutorial/part_1.html)**
+
+We don't need to add our views they are added by default as the comment says
+
+Now we need to tell our django project about channels by including library inside our project
+installed apps settings
+
+**mysite/settings.py**
+```
+INSTALLED_APPS = [
+    'channels',
+    'chat',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+]
+```
+
+Now for pointing channels to root configuration, edit the **mysite/settings.py** file and add
+```ASGI_APPLICATION``` variable with value a path for our routing file
+
+```
+ASGI_APPLICATION = 'mysite.routing.application'
+```
+
+*mysite* is the folder, *routing* is the routing.py file we just created and application is 
+what we added in routing file.
+
+Run the server again and you will see that channels has overtaken our default django server.
+
+```
+> python manage.py runserver
+
+Performing system checks...
+
+System check identified no issues (0 silenced).
+September 01, 2018 - 10:24:20
+Django version 2.0.7, using settings 'mysite.settings'
+Starting ASGI/Channels version 2.1.3 development server at http://127.0.0.1:8000/
+Quit the server with CTRL-BREAK.
+2018-09-01 10:24:20,773 - INFO - server - HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+2018-09-01 10:24:20,773 - INFO - server - Configuring endpoint tcp:port=8000:interface=127.0.0.1
+2018-09-01 10:24:20,773 - INFO - server - Listening on TCP address 127.0.0.1:8000
+
+```
+
+Locate to the same url [127.0.0.1/chat](http://127.0.0.1/chat/) and you should see the same
+page again, in your console you should see that channels is working finely with our project
