@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Material Design Bootstrap</title>
+    <title>{% block title %}Django Chat App{% endblock %}</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <!-- Bootstrap core CSS -->
@@ -22,18 +22,41 @@
     <!-- Start your project here-->
     <div style="height: 100vh">
         <div class="flex-center flex-column">
-            <h1 class="animated fadeIn mb-4">Material Design for Bootstrap</h1>
+            <h1 class="animated fadeIn mb-4">Django Channels Chat App</h1>
+            <p class="animated fadeIn">What room would you like to enter ?</p>
+
+            <!-- Material input -->
+            <div class="md-form">
+                <i class="fa fa-user prefix"></i>
+                <input id="room-name-input" type="text" id="inputIconEx2" class="form-control">
+                <label for="inputIconEx2">Room</label>
+                <button id="room-name-submit" type="submit" class="btn btn-primary btn-md">Enter</button>
+            </div>
 
             <h5 class="animated fadeIn mb-3">Thank you for using our product. We're glad you're with us.</h5>
 
-            <p class="animated fadeIn text-muted">MDB Team</p>
+            <p class="animated fadeIn text-muted">Alexmhack Team</p>
         </div>
     </div>
     <!-- /Start your project here-->
 
-    <!-- SCRIPTS -->
     <!-- JQuery -->
     <script type="text/javascript" src="js/jquery-3.3.1.min.js"></script>
+    <!-- SCRIPTS -->
+    <script type="text/javascript" charset="utf-8" async defer>
+        var roomName = $("#room-name-input").focus();
+
+        $("#room-name-input").keyup(function(e) {
+            if (e.keyCode === 13) {
+                $("#room-name-submit").click();
+            }
+        });
+
+        $("#room-name-submit").click(function(e) {
+            var roomName = $("#room-name-input").val();
+            window.location.pathname = '/chat/' + roomName + '/';
+        })
+    </script>
     <!-- Bootstrap tooltips -->
     <script type="text/javascript" src="js/popper.min.js"></script>
     <!-- Bootstrap core JavaScript -->
