@@ -196,3 +196,91 @@ Quit the server with CTRL-BREAK.
 
 Locate to the same url [127.0.0.1/chat](http://127.0.0.1:8000/chat/) and you should see the same
 page again, in your console you should see that channels is working finely with our project
+
+# Add room view
+In this section we will be creating a new view for room where users can chat with each other 
+while in the same room.
+
+Create a new template for this view
+
+**templates/chat/room.html**
+```
+{% block script %}
+    
+    <script type="text/javascript" charset="utf-8" async defer>
+        
+        var roomName = {{ room_name_json }};
+
+        var chatSocket = new Websocket(
+            'ws://' + window.location.host + 'ws/chat/' + roomName + '/'
+        );
+
+        chatSocket.onmessage = function(e) {
+            var data =  JSON.parse(e.data);
+            var message = data['message'];
+            $("#chat-log").val() += (message  +'\n');
+        };
+
+        chatSocket.onclose = function(e) {
+            console.log("chat socket closed unexpectedly");
+        };
+
+        $("#chat-message-input").focus();
+
+        $("#chat-message-input").keyup(function(e) {
+            if (e.keyCode === 13) {
+                $("#chat-message-submit").click();
+            }
+        });
+
+        $("#chat-message-submit").click(function(e) {
+            var $messageInput = $("#chat-message-input");
+            var message = $messageInput.val();
+
+            chatSocket.send(JSON.stringify({
+                'message': message
+            }));
+
+            $messageInput.val('');
+        });
+
+    </script>
+
+{% endblock %}
+```
+
+We send the context variable room_name_json from our *room_view* inside 
+**chat/views.py**
+
+```
+import json
+
+from django.shortcuts import render
+from django.utils.safestring import mark_safe
+
+def room_view(request, room_name):
+    return render(request, 'chat/room.html', {
+        'room_name_json': mark_safe(json.dumps(room_name))
+    })
+
+```
+
+1. If chatSocket received a message then we parse the json data and store the message 
+from it in a js variable and add the message in the textarea.
+
+2. If we close the browser then we print a message on the console.
+
+3. If user pressed enter we click the send button.
+
+4. If the send button is pressed then we fetch the entered message from the input
+and send message from the WebSocket instance and make the input field empty.
+
+After our view is ready we create a url for our view.
+
+**chat/urls.py**
+```
+    ...
+    path('<room_name>/', room_view, name='room-view'),
+```
+
+**NOTE:** '/' should be added after <room_name> in the url for our room_view
