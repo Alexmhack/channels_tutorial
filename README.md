@@ -284,3 +284,69 @@ After our view is ready we create a url for our view.
 ```
 
 **NOTE:** '/' should be added after <room_name> in the url for our room_view
+
+# Channel Consumer
+Now we will create a basic consumer that accepts WebSocket connections on the path
+```ws/chat/room_name/ ``` that takes any message it receives on the WebSocket and 
+echoes it back to the same WebSocket.
+
+**NOTE:** We have used a ws/ prefix for sending the web socket because using it we 
+can distinguish between the WebSocket connections from ordinary HTTP connections
+
+Create a new file inside the chat app ```consumers.py```. Inside that file we simply
+create synchronous WebSocket consumer that accepts all connections, receives messages 
+from its client, and echos those messages back to the same client. For now it does not 
+broadcast messages to other clients in the same room.
+
+We need to create a routing configuration for tha chat app that has a route to the 
+consumer. Create a new file inside chat app **routing.py**
+
+**chat/routing.py**
+```
+from django.urls import path
+
+from .consumers import ChatConsumer
+
+websocket_urlpatterns = [
+    path('ws/chat/<room_name>/', ChatConsumer),
+]
+```
+
+The next step is to point the root routing configuration at the chat.routing module.
+
+**mysite/routing.py**
+```
+import chat.routing
+
+from channels.auth import AuthMiddlewareStack
+from channels.routing import ProtocolTypeRouter, URLRouter
+
+application = ProtocolTypeRouter({
+    'websocket': AuthMiddlewareStack(
+        URLRouter(
+            chat.routing.websocket_urlpatterns
+        )
+    )
+})
+```
+
+What above piece of code does is, we create a new key named 'websocket' in the 
+ProtocolTypeRouter, any connection is made to the channels server it is inspected by
+*ProtocolTypeRouter* and if it is a WebSocket connection like **ws:// or wss://** then 
+it is passed onto *AuthMiddlewareStack*.
+
+AuthMiddlewareStack provides the connection with a reference to the currently 
+authenticated user just like the django's AuthenticationMiddleware does with the 
+request object through which we can use the request variables such as ```request.user
+```.
+
+AuthMiddlewareStack hands over the connection to the URLRouter which simply routes the
+HTTP path to a particular consumer based on the provided url patterns just like django
+does with its urls and then urls routes to particular views.
+
+**Run migrations** to apply database changes (Django’s session framework needs the 
+database) and then start the Channels development server:
+
+Open [http://127.0.0.1:8000/chat/lobby/](http://127.0.0.1:8000/chat/lobby/) and
+enter any message in the input field and you should see the message echoed back to 
+you from the channels server.
