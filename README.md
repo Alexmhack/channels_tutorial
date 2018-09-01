@@ -194,5 +194,5 @@ Quit the server with CTRL-BREAK.
 
 ```
 
-Locate to the same url [127.0.0.1/chat](http://127.0.0.1/chat/) and you should see the same
+Locate to the same url [127.0.0.1/chat](http://127.0.0.1:8000/chat/) and you should see the same
 page again, in your console you should see that channels is working finely with our project
