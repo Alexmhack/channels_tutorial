@@ -123,3 +123,6 @@ Now let's check
 ```
 > python manage.py runserver
 ```
+
+Enter in anything and press enter or just hit the button and you will be taken to the
+new url *127.0.0.1/chat/<input-entered>*. 
