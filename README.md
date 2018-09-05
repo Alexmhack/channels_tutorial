@@ -349,3 +349,74 @@ database) and then start the Channels development server:
 Open [http://127.0.0.1:8000/chat/lobby/](http://127.0.0.1:8000/chat/lobby/) and
 enter any message in the input field and you should see the message echoed back to 
 you from the channels server.
+
+# Enable a channel layer
+When we enter a message, that message is echoed back to us and appears in chat log
+but if open a new browser window with the same chat room then the message we have sent
+till now don't appear in the new window, so for that we are going to create a channel
+layer for multiple instances of channels.
+
+**What is channel layer ?**
+
+A channel layer is a form of communication system which allows multiple consumer 
+instances to talk to each other and other django parts.
+
+**What will a channel layer do ?**
+
+1. A channel is like a mailbox where everyone who has the name of the channel can
+send messages to the channel.
+
+2. A group is a group of related channels. Anyone who has the name of the group can
+add or remove the channels from group or send messages to all channels in the group.
+
+In our chat application we want to have multiple instances of ChatConsumer in the same 
+room communicate with each other. To do that we will have each ChatConsumer add its 
+channel to a group whose name is based on the room name. That will allow ChatConsumers 
+to transmit messages to all other ChatConsumers in the same room.
+
+We will use a channel layer that uses redis as its backing store. To start a redis 
+server on port 6379, run the following command
+
+```
+> redis-server 
+```
+
+We need to install channels_redis so that channels know how to interface with **redis**
+
+```
+> pip install channels_redis
+```
+
+Before we can use a channel layer we need to configure it. Edit the 
+**mysite/settings.py** file and add ```CHANNELS_LAYER``` setting to the bottom
+
+```
+# mysite/settings.py
+# Channels
+ASGI_APPLICATION = 'mysite.routing.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+```
+
+For checking if channel layer can communicate with redis. Start a django shell and run
+
+```
+.../mysite> python manage.py shell
+
+>>> import channels.layers
+>>> channel_layer = channels.layers.get_channel_layer()
+>>> from asgiref.sync import async_to_sync
+>>> async_to_sync(channel_layer.send)('test_channel', {'type': 'hello'})
+>>> async_to_sync(channel_layer.receive)('test_channel')
+{'type': 'hello'}
+```
+
+Type Control-D to exit the Django shell.
+
+
